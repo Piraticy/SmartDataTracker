@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Smart Expense Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+  --bg: white;
+  --text: black;
+  --bg-dark: #121212;
+  --text-dark: #f0f0f0;
+}
+  body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: 0.3s;
+}
+  .container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  :root {
+  --bg: white;
+  --text: black;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --text: #f0f0f0;
+  }
+}
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  input, button {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #218838;
+  }
+  #expenseList {
+    margin-top: 20px;
+  }
+  #expenseList div {
+    background: #e9ecef;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+  }
+</style>
+<body>
+  <div class="container">
+    <h1>Expense Tracker</h1>
+
+    <form id="expenseForm">
+      <input type="date" name="date" required>
+      <input type="number" name="amount" placeholder="Amount" required>
+      <input type="text" name="category" placeholder="Category" required>
+      <input type="text" name="note" placeholder="Note">
+      <button type="submit">Add Expense</button>
+    </form>
+
+    <button onclick="downloadExpenses()">Download JSON</button>
+
+    <div id="expenseList"></div>
+  </div>
+
+
+</body>
+</html>
+<script>
+  document.getElementById('expenseForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData.entries());
+    google.script.run.withSuccessHandler(updateExpenseList).addExpense(data);
+  });
+
+  function updateExpenseList(expenses) {
+    const expenseList = document.getElementById('expenseList');
+    expenseList.innerHTML = '';
+    expenses.forEach(expense => {
+      const div = document.createElement('div');
+      div.textContent = `${expense.date} - ${expense.amount} - ${expense.category} - ${expense.note}`;
+      expenseList.appendChild(div);
+    });
+  }
+
+  function downloadExpenses() {
+    google.script.run.withSuccessHandler(function(json) {
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'expenses.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }).getExpensesAsJson();
+  }
+</script>
+<script>
+  function onOpen() {
+    const ui = SpreadsheetApp.getUi();
+    ui.createMenu('Expense Tracker')
+      .addItem('Open Sidebar', 'openSidebar')
+      .addToUi();
+  }
+
+  function openSidebar() {
+    const html = HtmlService.createHtmlOutputFromFile('Index')
+        .setTitle('Expense Tracker');
+    SpreadsheetApp.getUi().showSidebar(html);
+  }
+  function addExpense(data) {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    sheet.appendRow([data.date, data.amount, data.category, data.note]);
+    return getExpenses();
+  }
+  function getExpenses() {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const data = sheet.getDataRange().getValues();
+    const expenses = data.slice(1).map(row => ({
+      date: row[0],
+      amount: row[1],
+      category: row[2],
+      note: row[3]
+    }));
+    return expenses;
+  }
+  function getExpensesAsJson() {
+    const expenses = getExpenses();
+    return JSON.stringify(expenses, null, 2);
+  }
+  function onOpen() {
+    const ui = SpreadsheetApp.getUi();
+    ui.createMenu('Expense Tracker')
+      .addItem('Open Sidebar', 'openSidebar')
+      .addToUi();
+  }
+  function openSidebar() {
+    const html = HtmlService.createHtmlOutputFromFile('Index')
+        .setTitle('Expense Tracker');
+    SpreadsheetApp.getUi().showSidebar(html);
+  }
+  function addExpense(data) {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    sheet.appendRow([data.date, data.amount, data.category, data.note]);
+    return getExpenses();
+  }
+  function getExpenses() {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const data = sheet.getDataRange().getValues();
+    const expenses = data.slice(1).map(row => ({
+      date: row[0],
+      amount: row[1],
+      category: row[2],
+      note: row[3]
+    }));
+    return expenses;
+  }
+  function getExpensesAsJson() {
+    const expenses = getExpenses();
+    return JSON.stringify(expenses, null, 2);
+  }
+</script>
