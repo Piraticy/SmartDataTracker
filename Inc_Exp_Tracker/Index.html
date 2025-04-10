@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <meta name="theme-color" content="#ffffff">
+
+<style>
+  /* Reset & Base Styles */
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    color: #333;
+  }
+
+  h2 {
+    margin-top: 1em;
+    font-size: 1.5em;
+  }
+
+  input, select, button, textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+
+  button {
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #004999;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  th {
+    background-color: #f0f0f0;
+  }
+
+  @media (min-width: 600px) {
+    input, select, button, textarea {
+      font-size: 1.1rem;
+    }
+  }
+  
+   .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #ffffff;
+    border-top: 1px solid #ccc;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  }
+
+  .bottom-nav button {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    padding: 10px;
+    flex: 1;
+    color: #0066cc;
+  }
+
+  .bottom-nav button:hover {
+    background-color: #f5f5f5;
+  }
+
+  body {
+    padding-bottom: 60px; /* prevent content hiding under nav */
+  }
+  body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+
+  body.dark-mode input,
+  body.dark-mode select,
+  body.dark-mode textarea {
+    background-color: #1e1e1e;
+    color: #fff;
+    border: 1px solid #444;
+  }
+
+  body.dark-mode button:not(#themeToggleBtn) {
+    background-color: #333;
+    color: white;
+  }
+
+  body.dark-mode table {
+    background-color: #1e1e1e;
+    color: #fff;
+  }
+
+  body.dark-mode th {
+    background-color: #333;
+  }
+
+  body.dark-mode td {
+    border-color: #444;
+  }
+  
+</style>
+</head>
+<body>
+<button id="themeToggleBtn" onclick="toggleTheme()" title="Toggle dark mode" style="background: none; border: none; font-size: 1.5em; cursor: pointer;">
+  🌙
+</button>
+
+
+  <!--<i class="material-icons theme-toggle" onclick="toggleTheme()">brightness_6</i>-->
+
+  <div class="container">
+    <ul class="tabs">
+      <li class="tab col s6"><a class="active" href="#entry">Entry</a></li>
+      <li class="tab col s6"><a href="#dashboard">Dashboard</a></li>
+    </ul>
+  </div>
+
+  <!-- Entry Form -->
+  <div id="entry" class="container">
+    <h5 class="center-align">💰 Income & Expense Tracker</h5>
+
+    <div class="input-field">
+      <select id="type">
+        <option value="Income">Income</option>
+        <option value="Expense">Expense</option>
+      </select>
+      <label>Type</label>
+    </div>
+
+    <div class="input-field">
+      <input id="date" type="text" class="datepicker">
+      <label for="date">Date</label>
+    </div>
+
+    <div class="input-field">
+      <input id="category" type="text">
+      <label for="category">Category</label>
+    </div>
+
+    <div class="input-field">
+      <input id="amount" type="number">
+      <label for="amount">Amount</label>
+    </div>
+
+    <div class="input-field">
+      <textarea id="notes" class="materialize-textarea"></textarea>
+      <label for="notes">Notes</label>
+    </div>
+
+    <button id="submitBtn" class="btn">Submit</button>
+    <button id="viewBtn" class="btn grey">View Google Sheet</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="container">
+    <h5 class="center-align">📊 Dashboard</h5>
+    <div class="center-align" style="margin-top: 20px;">
+  <button class="btn green" onclick="exportDashboardToPDF()">📄 Export to PDF</button>
+</div>
+
+
+    <div class="row">
+      <div class="input-field col s4">
+        <select id="filterType">
+          <option value="">All</option>
+          <option value="Income">Income</option>
+          <option value="Expense">Expense</option>
+        </select>
+        <label>Type</label>
+      </div>
+      <div class="input-field col s4">
+        <input type="text" id="filterCategory">
+        <label for="filterCategory">Category</label>
+      </div>
+      <div class="input-field col s4">
+        <input type="text" id="filterStartDate" class="datepicker">
+        <label for="filterStartDate">Start Date</label>
+      </div>
+      <div class="input-field col s4">
+        <input type="text" id="filterEndDate" class="datepicker">
+        <label for="filterEndDate">End Date</label>
+      </div>
+      <div class="col s4">
+        <button class="btn" onclick="applyFilters()">Apply Filters</button>
+      </div>
+    </div>
+
+    <div id="chart_div" style="height: 400px;"></div>
+    <div id="category_chart_div" style="height: 400px;"></div>
+  </div>
+
+  <!-- Add to your tab navigation -->
+<button id="adminTab">Admin Dashboard</button>
+
+<!-- Somewhere in your HTML body -->
+<div id="adminView" style="display:none;">
+  <h2>Admin Dashboard</h2>
+  <div id="adminTableContainer">Loading users...</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="bottom-nav">
+  <button onclick="showSection('formView')">Add Entry</button>
+  <button onclick="showSection('dashboardView')">Dashboard</button>
+  <button onclick="showSection('adminView')">Admin</button>
+</nav>
+
+<button id="installBtn" style="display: none;">Install App</button>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      M.FormSelect.init(document.querySelectorAll('select'));
+      M.Datepicker.init(document.querySelectorAll('.datepicker'), { format: 'yyyy-mm-dd', autoClose: true });
+      M.Tabs.init(document.querySelectorAll('.tabs'));
+
+      document.getElementById('submitBtn').addEventListener('click', submitEntry);
+      document.getElementById('viewBtn').addEventListener('click', () => {
+        google.script.run.withSuccessHandler(url => window.open(url, '_blank')).getSheetUrl();
+      });
+
+      document.querySelectorAll('.tabs a').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          const target = e.target.getAttribute('href').substring(1);
+          document.getElementById('entry').style.display = target === 'entry' ? 'block' : 'none';
+          document.getElementById('dashboard').style.display = target === 'dashboard' ? 'block' : 'none';
+          if (target === 'dashboard') loadDashboard();
+        });
+      });
+    });
+
+    function submitEntry() {
+      const entry = {
+        type: document.getElementById('type').value,
+        date: document.getElementById('date').value || new Date().toISOString().split('T')[0],
+        category: document.getElementById('category').value,
+        amount: parseFloat(document.getElementById('amount').value),
+        notes: document.getElementById('notes').value
+      };
+
+      if (!entry.category || isNaN(entry.amount)) {
+        M.toast({ html: 'Please fill all required fields' });
+        return;
+      }
+
+      google.script.run.withSuccessHandler(() => {
+        M.toast({ html: 'Entry added!' });
+        document.getElementById('category').value = '';
+        document.getElementById('amount').value = '';
+        document.getElementById('notes').value = '';
+        M.updateTextFields();
+      }).addEntry(entry);
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    //make dark mode persist eveb after a page reload 
+  function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('dark-mode', isDark);
+    
+    const btn = document.getElementById('themeToggleBtn');
+    btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  window.onload = function() {
+    const isDark = localStorage.getItem('dark-mode') === 'true';
+    if (isDark) document.body.classList.add('dark-mode');
+    document.getElementById('themeToggleBtn').textContent = isDark ? '☀️' : '🌙';
+  };
+
+    function applyFilters() {
+      const filters = {
+        type: document.getElementById('filterType').value,
+        category: document.getElementById('filterCategory').value,
+        startDate: document.getElementById('filterStartDate').value,
+        endDate: document.getElementById('filterEndDate').value
+      };
+      loadDashboard(filters);
+    }
+
+    function loadDashboard(filters = {}) {
+      google.script.run.withSuccessHandler(drawLineChart).getSummaryData(filters);
+      google.script.run.withSuccessHandler(drawPieChart).getCategoryBreakdownData(filters);
+    }
+
+    function drawLineChart(dataArray) {
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(() => {
+        const data = google.visualization.arrayToDataTable(dataArray);
+        const chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, {
+          title: 'Monthly Income vs Expense',
+          curveType: 'function',
+          legend: { position: 'bottom' },
+          chartArea: { width: '90%', height: '70%' },
+          hAxis: { title: 'Month' },
+          vAxis: { title: 'Amount' },
+          backgroundColor: 'transparent',
+          colors: ['#4CAF50', '#F44336']
+        });
+      });
+    }
+
+    function drawPieChart(dataArray) {
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(() => {
+        const data = google.visualization.arrayToDataTable(dataArray);
+        const chart = new google.visualization.PieChart(document.getElementById('category_chart_div'));
+        chart.draw(data, {
+          title: 'Expense by Category',
+          pieHole: 0.4,
+          chartArea: { width: '90%', height: '70%' },
+          backgroundColor: 'transparent'
+        });
+      });
+    }
+  //Pdf functions
+  function exportDashboardToPDF() {
+  const dashboardSection = document.getElementById('dashboard');
+  html2canvas(dashboardSection).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+    pdf.save('Dashboard_Report.pdf');
+  });
+}  
+  document.addEventListener('DOMContentLoaded', function () {
+    console.log("DOM loaded!");
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      console.log("Submit button clicked");
+      submitEntry();
+    });
+
+    document.getElementById('viewBtn').addEventListener('click', () => {
+      console.log("View Sheet button clicked");
+      google.script.run.withSuccessHandler(url => {
+        console.log("Sheet URL returned:", url);
+        window.open(url, '_blank');
+      }).getSheetUrl();
+    });
+  });
+
+  function submitEntry() {
+    const entry = {
+      date: document.getElementById("date").value,
+      type: document.getElementById("type").value,
+      category: document.getElementById("category").value,
+      amount: parseFloat(document.getElementById("amount").value),
+      notes: document.getElementById("notes").value
+    };
+    console.log("Submitting entry:", entry);
+    google.script.run.addEntry(entry);
+    alert("Entry submitted successfully!");
+  }
+document.getElementById("adminTab").addEventListener("click", function () {
+  showSection("adminView");
+  loadAdminData();
+});
+
+function loadAdminData() {
+  google.script.run.withSuccessHandler(function (data) {
+    let html = `<table border="1" style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Sheet URL</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    data.forEach(row => {
+      html += `<tr>
+        <td>${row[0]}</td>
+        <td><a href="${row[1]}" target="_blank">Open Sheet</a></td>
+        <td>${row[2]}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    document.getElementById("adminTableContainer").innerHTML = html;
+  }).getAdminData();
+}
+document.addEventListener("DOMContentLoaded", function () {
+  google.script.run.withSuccessHandler(function (email) {
+    if (email === "mwasantajaadamu@gmail.com") {
+      document.getElementById("adminTab").style.display = "inline-block";
+    }
+  }).getCurrentUserEmail();
+});
+
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', () => {
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    if (choice.outcome === 'accepted') {
+      console.log('App installed');
+    }
+    deferredPrompt = null;
+  });
+});
+</script>
+
+</body>
+</html>

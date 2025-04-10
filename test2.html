@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top" />
+    <!-- Meta to force fullscreen PWA feel -->
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+   <!-- For iOS fullscreen -->
+   <meta name="apple-mobile-web-app-capable" content="yes">
+   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap" />
+    <link rel="manifest" href="manifest=true" />
+    <meta name="theme-color" content="#2E7D32" />
+    <!-- Mobile App Icons and Settings -->
+    <link rel="apple-touch-icon" href="YOUR_ICON_URL">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#263238">
+
+     <style>
+    body, html {
+    margin: 0 auto;
+    padding: 1rem;
+    font-size: 16px;
+    overflow-x: hidden;
+    max-width: 480px;
+    background: #f5f5f5;
+    }
+
+    header {
+    background-color: #263238;
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+  .container {
+    padding: 1rem;
+  }
+
+  .tabs {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .tabs button {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 24px;
+  }
+
+  .tabs button.active {
+    color: #00796B;
+  }
+
+  canvas {
+    max-width: 100% !important;
+  }
+  .dark-theme {
+  background-color: #121212;
+  color: #f0f0f0;
+}
+.dark-theme input, .dark-theme textarea {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+}
+
+</style>
+
+  </head>
+  <body>
+    <!-- Theme Toggle Button -->
+   <button id="theme-toggle" class="btn-flat">
+   <i class="material-icons" id="theme-icon">dark_mode</i>
+   </button>
+
+    <header>
+      <h5><i class="fas fa-money-bill-wave"></i> Income & Expense Tracker</h5>
+    </header>
+
+    <main class="container">
+      <div id="tab-add">
+      <?!= include('form') ?>
+      </div>
+      <div id="tab-history" style="display:none">
+        <ul class="collection" id="historyList"></ul>
+      </div>
+      <div id="tab-summary" style="display:none">
+        <canvas id="summaryChart"></canvas>
+      </div>
+    </main>
+
+    <nav class="tabs">
+      <button onclick="showTab('add')"><i class="material-icons">add</i></button>
+      <button onclick="showTab('history')"><i class="material-icons">history</i></button>
+      <button onclick="showTab('summary')"><i class="material-icons">bar_chart</i></button>
+    </nav>
+
+    <a class="btn-flat" href="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE/edit" target="_blank">
+    <i class="material-icons">View Sheet</i>
+      </a>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const showTab = (tab) => {
+        document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+        document.getElementById('tab-' + tab).style.display = 'block';
+        if (tab === 'history') loadHistory();
+        if (tab === 'summary') loadSummary();
+      };
+
+       document.getElementById('theme-toggle').addEventListener('click', () => {
+       document.body.classList.toggle('dark-theme');
+       const icon = document.getElementById('theme-icon');
+       icon.textContent = icon.textContent === 'dark_mode' ? 'light_mode' : 'dark_mode';
+       });
+
+
+      const submitForm = () => {
+        const data = {
+          type: document.getElementById('type').value,
+          date: document.getElementById('date').value,
+          category: document.getElementById('category').value,
+          amount: document.getElementById('amount').value,
+          notes: document.getElementById('notes').value
+        };
+        google.script.run.withSuccessHandler(() => {
+          M.toast({ text: 'Saved!', classes: 'green' });
+          document.getElementById('trackerForm').reset();
+        }).submitData(data);
+      };
+
+      const loadHistory = () => {
+        google.script.run.withSuccessHandler(data => {
+          const list = document.getElementById('historyList');
+          list.innerHTML = '';
+          data.reverse().forEach(row => {
+            const li = document.createElement('li');
+            li.className = 'collection-item';
+            li.textContent = `${row[1]}: ${row[3]} - ₹${row[4]} (${row[2]})`;
+            list.appendChild(li);
+          });
+        }).getTransactions();
+      };
+
+      const loadSummary = () => {
+        google.script.run.withSuccessHandler(data => {
+          const income = data.filter(r => r[1] === 'Income').reduce((sum, r) => sum + Number(r[4]), 0);
+          const expense = data.filter(r => r[1] === 'Expense').reduce((sum, r) => sum + Number(r[4]), 0);
+          new Chart(document.getElementById('summaryChart'), {
+            type: 'doughnut',
+            data: {
+              labels: ['Income', 'Expense'],
+              datasets: [{ data: [income, expense], backgroundColor: ['#4caf50', '#f44336'] }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { position: 'bottom' } }
+            }
+          });
+        }).getTransactions();
+      };
+    </script>
+  </body>
+</html>
