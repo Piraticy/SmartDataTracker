@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#2E7D32" />
+    <title>Smart Finance Tracker</title>
+
+    <!-- Materialize & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+   
+   <style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background-color: #263238;
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 22px;
+  }
+
+  main.container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .card-panel {
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    margin: auto 0; /* center vertically */
+  }
+
+  nav.tabs {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-top: 1px solid #ccc;
+    display: flex;
+    justify-content: space-around;
+    padding: 0.3rem 0;
+    box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+  }
+
+  .tabs button {
+    background: none;
+    border: none;
+    color: #777;
+    font-size: 12px;
+    text-align: center;
+    flex: 1;
+  }
+
+  .tabs button i {
+    display: block;
+    font-size: 22px;
+  }
+
+  .tabs button.active {
+    color: #2E7D32;
+  }
+
+  .dark-theme {
+    background-color: #121212 !important;
+    color: #f0f0f0;
+  }
+
+  .dark-theme header {
+    background-color: #000000 !important;
+  }
+
+  .dark-theme input, .dark-theme textarea, .dark-theme select {
+    background-color: #1e1e1e !important;
+    color: #f0f0f0 !important;
+  }
+
+  .dark-theme .card-panel {
+    background-color: #1c1c1c !important;
+  }
+
+  .input-field input[type="date"] {
+    color: #000;
+  }
+
+  .dark-theme .input-field input[type="date"] {
+    color: #fff;
+  }
+</style>
+
+
+  </head>
+  <body>
+    <!-- Dark Mode Toggle -->
+    <header>
+      <span><i class="fas fa-coins"></i> Smart Finance Tracker</span>
+      <button id="theme-toggle"><i class="material-icons" id="theme-icon">dark_mode</i></button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+      <!-- Entry Tab -->
+      <div id="tab-entry">
+        <div class="card-panel z-depth-1">
+          <form id="trackerForm">
+            <div class="input-field">
+              <select id="type">
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+              </select>
+              <label>Type</label>
+            </div>
+            <div class="input-field">
+              <input type="text" id="category" placeholder="Category" required />
+            </div>
+            <div class="input-field">
+              <input type="number" id="amount" placeholder="Amount" required />
+            </div>
+            <div class="input-field">
+              <input type="date" id="date" required />
+              <label for="date">Date</label>
+            </div>
+            <div class="input-field">
+              <input type="text" id="notes" placeholder="Notes (optional)" />
+            </div>
+            <div class="center">
+              <button class="btn green" type="button" onclick="submitForm()">SUBMIT</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- View Data Tab -->
+      <div id="tab-view" style="display: none;">
+        <ul class="collection" id="historyList"></ul>
+      </div>
+
+      <!-- Charts Tab -->
+      <div id="tab-charts" style="display: none;">
+        <canvas id="summaryChart"></canvas>
+      </div>
+    </main>
+
+    <!-- Bottom Tab Navigation -->
+    <nav class="tabs">
+      <button onclick="showTab('entry')" id="btn-entry" class="active">
+        <i class="material-icons">edit</i> Entry
+      </button>
+      <button onclick="showTab('view')" id="btn-view">
+        <i class="material-icons">list</i> View
+      </button>
+      <button onclick="showTab('charts')" id="btn-charts">
+        <i class="material-icons">bar_chart</i> Charts
+      </button>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        M.FormSelect.init(document.querySelectorAll('select'));
+      });
+
+      const showTab = (tab) => {
+        ['entry', 'view', 'charts'].forEach(t => {
+          document.getElementById('tab-' + t).style.display = 'none';
+          document.getElementById('btn-' + t).classList.remove('active');
+        });
+        document.getElementById('tab-' + tab).style.display = 'block';
+        document.getElementById('btn-' + tab).classList.add('active');
+
+        if (tab === 'view') loadHistory();
+        if (tab === 'charts') loadSummary();
+      };
+
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        document.body.classList.toggle('dark-theme');
+        const icon = document.getElementById('theme-icon');
+        icon.textContent = icon.textContent === 'dark_mode' ? 'light_mode' : 'dark_mode';
+      });
+
+      const submitForm = () => {
+        const data = {
+          type: document.getElementById('type').value,
+          category: document.getElementById('category').value,
+          amount: document.getElementById('amount').value,
+          date: document.getElementById('date').value,
+          notes: document.getElementById('notes').value,
+        };
+        google.script.run.withSuccessHandler(() => {
+          M.toast({ text: 'Saved!', classes: 'green' });
+          document.getElementById('trackerForm').reset();
+        }).submitData(data);
+      };
+
+      const loadHistory = () => {
+        google.script.run.withSuccessHandler(data => {
+          const list = document.getElementById('historyList');
+          list.innerHTML = '';
+          data.reverse().forEach(row => {
+            const li = document.createElement('li');
+            li.className = 'collection-item';
+            li.textContent = `${row[5]} - ${row[1]}: ₹${row[4]} (${row[2]})`;
+            list.appendChild(li);
+          });
+        }).getTransactions();
+      };
+
+      const loadSummary = () => {
+        google.script.run.withSuccessHandler(data => {
+          const income = data.filter(r => r[1] === 'Income').reduce((sum, r) => sum + Number(r[4]), 0);
+          const expense = data.filter(r => r[1] === 'Expense').reduce((sum, r) => sum + Number(r[4]), 0);
+          new Chart(document.getElementById('summaryChart'), {
+            type: 'doughnut',
+            data: {
+              labels: ['Income', 'Expense'],
+              datasets: [{ data: [income, expense], backgroundColor: ['#4caf50', '#f44336'] }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { position: 'bottom' } }
+            }
+          });
+        }).getTransactions();
+      };
+    </script>
+  </body>
+</html>
