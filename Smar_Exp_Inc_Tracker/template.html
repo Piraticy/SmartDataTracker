@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#333" />
   <title>💰 Smart Finance Tracker</title>
-  <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <style>
     body {
@@ -66,7 +65,7 @@
       border-radius: 10px;
       margin-bottom: 1rem;
     }
-    input, select, textarea, button {
+    input, select, textarea {
       width: 100%;
       padding: 0.75rem;
       margin-top: 0.5rem;
@@ -74,10 +73,14 @@
       border: none;
       background-color: #3a3a3a;
       color: white;
+      box-sizing: border-box;
     }
     button {
       background-color: #444;
       cursor: pointer;
+      color: white;
+      border: none;
+      border-radius: 5px;
     }
     button i {
       vertical-align: middle;
@@ -93,18 +96,19 @@
     .active {
       display: block;
     }
-    .category-btn {
+    .form-buttons {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      gap: 0.5rem;
       margin-top: 1rem;
-      background-color: #444;
     }
-    .category-btn i {
-      margin-right: 0.5rem;
+    .form-buttons button {
+      flex: 1;
+      padding: 0.6rem;
+      font-size: 0.9rem;
     }
   </style>
-  </head>
+</head>
 <body>
   <div class="header">
     <div class="header-title">💰 <span>Smart Finance Tracker</span></div>
@@ -125,19 +129,14 @@
       </select>
       <label>Category</label>
       <select id="categoryInput"></select>
-      <button class="category-btn" onclick="addNewCategory()">
-        <i class="material-icons">category</i>Add Category
-      </button>
       <label>Amount</label>
       <input type="number" id="amountInput" placeholder="e.g. 100.00" />
       <label>Notes</label>
       <textarea id="noteInput" placeholder="Optional note"></textarea>
-      <button onclick="addEntry()">
-        <i class="material-icons">add</i>Add Entry
-      </button>
-      <button onclick="viewSheet()">
-        <i class="material-icons">table_view</i>View Sheet
-      </button>
+      <div class="form-buttons">
+        <button onclick="addEntry()"><i class="material-icons">add</i>Add Entry</button>
+        <button onclick="viewSheet()"><i class="material-icons">table_view</i>View Sheet</button>
+      </div>
     </div>
   </div>
 
@@ -160,6 +159,7 @@
       <i class="material-icons">bar_chart</i>Charts
     </div>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const tabs = document.querySelectorAll('.tab-content');
@@ -191,6 +191,16 @@
         opt.value = opt.textContent = cat;
         catInput.appendChild(opt);
       });
+      const addNew = document.createElement('option');
+      addNew.value = 'add_new';
+      addNew.textContent = '➕ Add New...';
+      catInput.appendChild(addNew);
+
+      catInput.onchange = function () {
+        if (this.value === 'add_new') {
+          addNewCategory();
+        }
+      };
     }
 
     function addNewCategory() {
@@ -199,6 +209,7 @@
         categories.push(newCat);
         localStorage.setItem('categories', JSON.stringify(categories));
         populateCategories();
+        document.getElementById('categoryInput').value = newCat;
       }
     }
 
@@ -223,4 +234,3 @@
   </script>
 </body>
 </html>
-

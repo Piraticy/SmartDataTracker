@@ -1,195 +1,380 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
-  <title>Smart Expense Tracker</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f1f1f" />
+  <title>💰 Smart Finance Tracker</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  <style>
+    :root {
+      --bg: #1f1f1f;
+      --fg: #fff;
+      --card: #2c2c2c;
+      --input: #3a3a3a;
+      --accent: #ff9800;
+    }
+    body.light {
+      --bg: #f4f4f4;
+      --fg: #000;
+      --card: #fff;
+      --input: #ddd;
+      --accent: #2196f3;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background-color: var(--card);
+      font-weight: bold;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+    }
+    .header-title span {
+      margin-left: 0.5rem;
+    }
+    .header-time {
+      flex: 1;
+      text-align: center;
+      font-size: 1rem;
+    }
+    .theme-toggle {
+      cursor: pointer;
+      font-size: 1.5rem;
+    }
+    .tab-bar {
+      display: flex;
+      justify-content: space-around;
+      background-color: var(--card);
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      padding: 0.5rem 0;
+    }
+    .tab-bar div {
+      text-align: center;
+      flex-grow: 1;
+      cursor: pointer;
+    }
+    .tab-bar i {
+      display: block;
+      font-size: 1.5rem;
+    }
+    .tab-content {
+      padding: 1rem;
+      margin-bottom: 60px;
+    }
+    .form-card {
+      background-color: var(--card);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 5px;
+      border: none;
+      background-color: var(--input);
+      color: var(--fg);
+      box-sizing: border-box;
+    }
+    button {
+      background-color: var(--accent);
+      cursor: pointer;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button i {
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+    select option {
+      background-color: var(--bg);
+      color: var(--fg);
+    }
+    .hidden {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    .form-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .form-buttons button {
+      flex: 1;
+      padding: 0.6rem;
+      font-size: 0.9rem;
+    }
+    .entry-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.entry-card .note {
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+  </style>
 </head>
-
-<style>
-* {
-  box-sizing: border-box;
-}
-
-html {
-  font-size: 100%;
-  --bg: white;
-  --text: black;
-  --bg-dark: #121212;
-  --text-dark: #f0f0f0;
-}
-  body {
-  font-family: Arial, sans-serif;
-  padding: 20px;
-  margin: 0;
-  background-color: var(--bg);
-  color: var(--text);
-  transition: 0.3s;
-}
-  .container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-  :root {
-  --bg: white;
-  --text: black;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #121212;
-    --text: #f0f0f0;
-  }
-}
-  h1 {
-    text-align: center;
-    color: #333;
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-  }
-  input, button {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #188d32;
-  }
-  #expenseList {
-    margin-top: 20px;
-  }
-  #expenseList div {
-    background: #e9ecef;
-    padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 5px;
-  }
-</style>
 <body>
-  <div class="container">
-    <h1>Expense Tracker</h1>
-
-    <form id="expenseForm">
-      <input type="date" name="date" required>
-      <input type="number" name="amount" placeholder="Amount" required>
-      <input type="text" name="category" placeholder="Category" required>
-      <input type="text" name="note" placeholder="Note">
-      <button type="submit">Add Expense</button>
-    </form>
-
-    <button onclick="downloadExpenses()">VIEW SHEET</button>
-
-    <div id="expenseList"></div>
+  <div class="header">
+    <div class="header-title">💰 <span>Smart Finance Tracker</span></div>
+    <div class="header-time" id="timeDisplay">--:--</div>
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <i id="themeIcon" class="material-icons">dark_mode</i>
+    </div>
   </div>
 
+  <div class="tab-content active" id="homeTab">
+    <div class="form-card">
+      <label>Date</label>
+      <input type="date" id="dateInput" />
+      <label>Type</label>
+      <select id="typeInput">
+        <option value="Income">Income</option>
+        <option value="Expense">Expense</option>
+      </select>
+      <label>Category</label>
+      <select id="categoryInput"></select>
+      <label>Amount</label>
+      <input type="number" id="amountInput" placeholder="e.g. 100.00" />
+      <label>Notes</label>
+      <textarea id="noteInput" placeholder="Optional note"></textarea>
+      <div class="form-buttons">
+        <button onclick="addEntry()"><i class="material-icons">add</i>Add Entry</button>
+        <button onclick="viewSheet()"><i class="material-icons">table_view</i>View Sheet</button>
+      </div>
+    </div>
+  </div>
 
+  <div class="tab-content hidden" id="viewTab">
+    <div class="form-card">
+      <p>Filter (Coming soon)</p>
+    </div>
+    <p>Transactions will appear here...</p>
+  </div>
+
+  <div class="tab-content hidden" id="chartTab">
+    <canvas id="myChart" width="400" height="200"></canvas>
+  </div>
+
+  <div class="tab-bar">
+    <div onclick="showTab('homeTab')"><i class="material-icons">home</i>Home</div>
+    <div onclick="showTab('viewTab')"><i class="material-icons">view_list</i>View Data</div>
+    <div onclick="showTab('chartTab')"><i class="material-icons">bar_chart</i>Charts</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const tabs = document.querySelectorAll('.tab-content');
+    const categories = JSON.parse(localStorage.getItem('categories') || '["Salary","Food","Bills"]');
+
+    function showTab(id) {
+      tabs.forEach(tab => tab.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      const isLight = body.classList.toggle('light');
+      icon.textContent = isLight ? 'light_mode' : 'dark_mode';
+    }
+
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('timeDisplay').textContent = timeString;
+    }
+
+    function populateCategories() {
+      const catInput = document.getElementById('categoryInput');
+      catInput.innerHTML = '';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = cat;
+        catInput.appendChild(opt);
+      });
+      const addNew = document.createElement('option');
+      addNew.value = 'add_new';
+      addNew.textContent = '➕ Add New...';
+      catInput.appendChild(addNew);
+
+      catInput.onchange = function () {
+        if (this.value === 'add_new') addNewCategory();
+      };
+    }
+
+    function addNewCategory() {
+      const newCat = prompt("Enter new category:");
+      if (newCat && !categories.includes(newCat)) {
+        categories.push(newCat);
+        localStorage.setItem('categories', JSON.stringify(categories));
+        populateCategories();
+        document.getElementById('categoryInput').value = newCat;
+      }
+    }
+
+   function addEntry() {
+     const date = document.getElementById('dateInput').value;
+     const type = document.getElementById('typeInput').value;
+     const category = document.getElementById('categoryInput').value;
+     const amount = document.getElementById('amountInput').value;
+     const note = document.getElementById('noteInput').value;
+     if (!date || !category || !amount) return alert("Please fill all required fields.");
+
+    const entry = { date, type, category, amount, note };
+
+    google.script.run
+    .withSuccessHandler(() => alert("Entry saved!"))
+    .withFailureHandler(err => alert("Error: " + err.message))
+    .saveTransaction(entry);
+}
+
+  function loadTransactions() {
+  const container = document.getElementById("entryList");
+  container.innerHTML = '<p>Loading...</p>';
+
+  google.script.run
+    .withSuccessHandler(entries => {
+      if (!entries.length) {
+        container.innerHTML = '<p>No entries found.</p>';
+        return;
+      }
+
+      container.innerHTML = entries.map(entry => `
+        <div class="entry-card">
+          <div><strong>${entry.date}</strong> — ${entry.type} (${entry.category})</div>
+          <div>Amount: $${entry.amount}</div>
+          <div class="note">${entry.note || ""}</div>
+        </div>
+      `).join('');
+    })
+    .withFailureHandler(err => {
+      container.innerHTML = '<p>Error loading data.</p>';
+      console.error(err);
+    })
+    .getAllTransactions();
+   document.querySelectorAll('.tab-button').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const tab = e.currentTarget.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+    document.getElementById(tab).style.display = 'block';
+
+    // Refresh data when View Data tab is opened
+    if (tab === 'view') loadTransactions();
+  });
+});
+ 
+}
+
+
+   function viewSheet() {
+    google.script.run
+    .withSuccessHandler(url => window.open(url, "_blank"))
+    .withFailureHandler(err => alert("Unable to fetch sheet URL"))
+    .getSheetUrl();
+    }
+
+
+    function drawChart() {
+      const ctx = document.getElementById('myChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Food', 'Transport', 'Bills'],
+          datasets: [{
+            label: 'Expenses',
+            data: [120, 80, 150],
+            backgroundColor: ['#e57373', '#ba68c8', '#4db6ac']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    setInterval(updateTime, 1000);
+    updateTime();
+    populateCategories();
+    drawChart();
+  </script>
+
+  <!-- Manifest for PWA -->
+  <script type="application/json" id="manifest">
+    {
+      "name": "Smart Finance Tracker",
+      "short_name": "Finance",
+      "start_url": ".",
+      "display": "standalone",
+      "background_color": "#1f1f1f",
+      "theme_color": "#1f1f1f",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
+        {
+          "src": "icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    }
+  </script>
+
+  <!-- Service Worker -->
+  <script type="text/javascript" id="sw">
+    const swScript = `
+      self.addEventListener('install', event => {
+        event.waitUntil(caches.open('v1').then(cache => {
+          return cache.addAll([
+            './',
+            './index.html',
+            'https://cdn.jsdelivr.net/npm/chart.js',
+            'https://fonts.googleapis.com/icon?family=Material+Icons'
+          ]);
+        }));
+      });
+
+      self.addEventListener('fetch', event => {
+        event.respondWith(
+          caches.match(event.request).then(response => response || fetch(event.request))
+        );
+      });
+    `;
+    const blob = new Blob([swScript], { type: 'text/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl);
+  </script>
 </body>
 </html>
-<script>
-  document.getElementById('expenseForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
-    google.script.run.withSuccessHandler(updateExpenseList).addExpense(data);
-  });
-
-  function updateExpenseList(expenses) {
-    const expenseList = document.getElementById('expenseList');
-    expenseList.innerHTML = '';
-    expenses.forEach(expense => {
-      const div = document.createElement('div');
-      div.textContent = `${expense.date} - ${expense.amount} - ${expense.category} - ${expense.note}`;
-      expenseList.appendChild(div);
-    });
-  }
-
-  function downloadExpenses() {
-    google.script.run.withSuccessHandler(function(json) {
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'expenses.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }).getExpensesAsJson();
-  }
-</script>
-<script>
-  function onOpen() {
-    const ui = SpreadsheetApp.getUi();
-    ui.createMenu('Expense Tracker')
-      .addItem('Open Sidebar', 'openSidebar')
-      .addToUi();
-  }
-
-  function openSidebar() {
-    const html = HtmlService.createHtmlOutputFromFile('Index')
-        .setTitle('Expense Tracker');
-    SpreadsheetApp.getUi().showSidebar(html);
-  }
-  function addExpense(data) {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    sheet.appendRow([data.date, data.amount, data.category, data.note]);
-    return getExpenses();
-  }
-  function getExpenses() {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    const data = sheet.getDataRange().getValues();
-    const expenses = data.slice(1).map(row => ({
-      date: row[0],
-      amount: row[1],
-      category: row[2],
-      note: row[3]
-    }));
-    return expenses;
-  }
-  function getExpensesAsJson() {
-    const expenses = getExpenses();
-    return JSON.stringify(expenses, null, 2);
-  }
-  function onOpen() {
-    const ui = SpreadsheetApp.getUi();
-    ui.createMenu('Expense Tracker')
-      .addItem('Open Sidebar', 'openSidebar')
-      .addToUi();
-  }
-  function openSidebar() {
-    const html = HtmlService.createHtmlOutputFromFile('Index')
-        .setTitle('Expense Tracker');
-    SpreadsheetApp.getUi().showSidebar(html);
-  }
-  function addExpense(data) {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    sheet.appendRow([data.date, data.amount, data.category, data.note]);
-    return getExpenses();
-  }
-  function getExpenses() {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    const data = sheet.getDataRange().getValues();
-    const expenses = data.slice(1).map(row => ({
-      date: row[0],
-      amount: row[1],
-      category: row[2],
-      note: row[3]
-    }));
-    return expenses;
-  }
-  function getExpensesAsJson() {
-    const expenses = getExpenses();
-    return JSON.stringify(expenses, null, 2);
-  }
-</script>
